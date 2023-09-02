@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Página de Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Agregar la etiqueta viewport -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">  
+  <style>
+    /* Estilos generales */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('background.jpg'); /* Agregar la ruta de tu imagen de fondo llamativo */
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed; /* Asegura que el fondo no se desplace al hacer scroll */
+    }
+
+.jumbotron {
+  background-color: rgba(64, 64, 64, 0.7); /* Fondo gris medio oscuro con transparencia */
+  color: #fff; /* Texto en color blanco */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Sombreado al texto para mayor visibilidad */
+  padding: 20px;
+  border: 2px solid #000; /* Borde negro */
+  border-radius: 10px; /* Borde redondeado */
+  margin-bottom: 20px; /* Margen inferior para separar del contenido siguiente */
+}
+
+.ventana-emergente-agua {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.ventana-emergente-bebida {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.square::before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  left: 0;
+  width: 466px;
+  height: 346px;
+  margin: 17px;
+  background-color: rgba(255, 255, 255, 0.3); /* Fondo blanco semi-transparente */
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 2;
+}
+
+.square:hover::before {
+  opacity: 1;
+}    
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Estilos para el header y footer */
+    .footer {
+      background-color: #333;
+      color: #fff;
+      padding: 20px 0;
+      margin-top: 321px;
+    }
+
+    .footer p {
+      margin: 0;
+      padding: 5px 0;
+    }
+
+    .footer a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .navbar {
+      background-color: #333; /* Agregar color de fondo negro */
+    }
+
+    /* Estilos para el menú "Admin" y "Cerrar sesión" */
+    .navbar-header {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-header a {
+      margin-left: 10px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    /* Estilos para el "Nombre del Sitio" */
+    .navbar-brand {
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 4px;
+      margin-right: auto;
+    }
+
+    /* Estilos para la línea que divide el header del body */
+    .header-divider {
+      width: 100%;
+      border: none;
+      border-top: 1px solid #454545;
+      margin: -22px 0 10px;
+
+    }
+
+    /* Estilo cuando se pasa el ratón sobre los enlaces */
+    .navbar-header a:hover {
+      background-color: #4a4a4a;
+    }
+
+    /* Estilo para los cuadrados contenedores de imagen */
+    .square {
+      width: 500px;
+      height: 350px;
+      margin: 20px;
+      margin-bottom: -150px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+.pedido-nombre {
+  margin-top: 10px; /* Agrega un pequeño espacio entre el botón y el nombre del pedido */
+  position: absolute;
+  bottom: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Agregar sombra al texto para mayor visibilidad */
+  z-index: 3;
+}
+
+    /* Estilo para la imagen dentro del cuadrado */
+    .square img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.3s;
+      display: block;
+      border: 2px solid #000000;
+    }
+
+    /* Estilo para el botón de pedir */
+    .square .pedido-btn {
+      display: none;
+      position: absolute;
+      top:  90%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px; /* Ajusta el ancho del botón */
+      height: 50px; /* Ajusta la altura del botón */ 
+      z-index: 3;   
+      background-color: #333; /* Cambiar el color de fondo a gris (#888) */
+      color: #fff; /* Cambiar el color del texto a blanco (#fff) */  
+      border: none; /* Eliminar el borde del botón */
+    }
+
+    /* Mostrar el botón de pedir al pasar el cursor sobre el cuadrado */
+    .square:hover .pedido-btn {
+      display: block;
+    }
+
+    .square .pedido-btn:hover {
+      background-color: #404040; /* Cambiar el color de fondo a un tono más claro de gris (#aaa) */
+    }
+
+    /* Estilos adicionales para dispositivos móviles */
+    @media (max-width: 768px) {
+      .jumbotron h2 {
+        font-size: 24px;
+      }
+
+  .square::before {
+    display: none; /* Ocultar el fondo blanco en dispositivos móviles */
+  }      
+
+      .footer {
+        margin-top: 25px;
+      }
+
+      /* Alinear el "Nombre del Sitio" al centro */
+      .navbar-center {
+        text-align: center;
+      }
+
+      /* Alinear los enlaces "Admin" y "Cerrar sesión" a la izquierda y derecha, respectivamente */
+      .navbar-links {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }  
+
+      .square {
+        display: block;
+        width: 100%;
+        margin: 10px auto;
+      }
+      
+
+      .row {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    .jumbotron p {
+      font-size: 16px;
+    }
+
+    .well p {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="container">
+        <!-- Nombre del Sitio -->
+        <a class="navbar-brand navbar-center"href="#">DrinkForYou</a>
+        <div class="navbar-header navbar-links navbar-right navbar-brand">
+          <!-- Enlace "Admin" -->
+          <a href="admin">Admin</a>
+          <!-- Enlace "Cerrar sesión" -->
+          <a id="logoutBtn" onclick="logout()" href="#">Cerrar sesión</a>
+        </div>
+      </div>
+    </nav>
+    <!-- Línea divisoria -->
+    <hr class="header-divider">
+  </header>
+  <div class="container theme-showcase" role="main">
+    <div class="jumbotron">
+      <h2 id="username"></h2>
+      <h5>PROYECTO FERIA TP (TELECOMUNICACIONES/ELECTRICIDAD)</h5>
+      <p>AQUI AL PULSAR EL BOTON "PEDIR" ENVIARA UN PULSO A UN RELE</p>
+    </div>
+    <div class="row">
+      <!-- CUADRADO 1 -->
+      <div class="col-md-6 col-sm-12 text-center square">
+        <img src="agua.jpg" alt="agua">
+        <button id="pedidoBtn1" type="button" class="pedido-btn btn btn-lg btn-primary">Pedir</button>
+        <p class="pedido-nombre">AGUA</p>
+      </div>
+      <!-- CUADRADO 2 -->
+      <div class="col-md-6 col-sm-12 text-center square pull-right">
+        <img src="bebidacoca.jpg" alt="bebida">
+        <button id="pedidoBtn2" type="button" class="pedido-btn btn btn-lg btn-primary">Pedir</button>
+        <p class="pedido-nombre">BEBIDA</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+          <p>Pagina elaborada por equipo de telecomunicaciones</p>
+          <p>© 2023 DET. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<div id="ventanaEmergenteagua" class="ventana-emergente-agua">
+    <p>Escoge tu tamaño de bebida:</p>
+    <input type="radio" id="grande" name="tamaño" value="grande">
+    <label for="grande">Grande</label>
+    <input type="radio" id="mediano" name="tamaño" value="mediano">
+    <label for="mediano">Mediano</label>
+    <button id="btnEnviar1">Enviar</button>
+</div>
+
+<div id="ventanaEmergentebebida" class="ventana-emergente-bebida">
+    <p>Escoge tu tamaño de bebida:</p>
+    <input type="radio" id="grande" name="tamaño" value="grande">
+    <label for="grande">Grande</label>
+    <input type="radio" id="mediano" name="tamaño" value="mediano">
+    <label for="mediano">Mediano</label>
+    <button id="btnEnviar2">Enviar</button>
+</div>
+
+  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    logoutBtn.addEventListener('click', () => {
+      // Enviar una solicitud al servidor para cerrar la sesión
+      fetch('/logout', {
+        method: 'POST',
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          console.log(data);
+          // Redirigir al formulario de inicio de sesión después de cerrar sesión
+          window.location.href = '/login.html';
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    fetch('/login-check')
+      .then((response) => {
+        if (response.ok) {
+          // El usuario ha iniciado sesión, cargar el nombre de usuario
+          response.json().then((data) => {
+            const username = data.nombre;
+            const usernameElement = document.getElementById('username');    
+            usernameElement.textContent = `Bienvenido, ${username}!`;
+          });
+        } else {
+          // El usuario no ha iniciado sesión, redirigir al formulario de inicio de sesión
+          window.location.href = '/login.html';
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+  document.getElementById('pedidoBtn1').addEventListener('click', () => {
+    document.getElementById('ventanaEmergenteagua').style.display = 'block';
+  });
+
+document.getElementById('btnEnviar1').addEventListener('click', function() {
+    // Obtener el valor del tamaño seleccionado
+    const selectedSize = document.querySelector('input[name="tamaño"]:checked');
+    
+    if (selectedSize) {
+        // Lógica para manejar la selección del tamaño
+        const sizeValue = selectedSize.value;
+        
+        // Ocultar la ventana emergente
+        document.getElementById('ventanaEmergenteagua').style.display = 'none';
+
+        // Enviar el tipo de pedido y el tamaño seleccionado a través de socket.io
+        const tipoPedido = 'agua';
+        socket.emit('pedido1', { tipoPedido, sizeValue });
+        
+        // Deseleccionar la opción escogida
+        selectedSize.checked = false;
+    } else {
+        // Si el usuario no ha seleccionado un tamaño, puedes mostrar un mensaje de error o tomar alguna otra acción.
+        alert("Debes seleccionar un tamaño antes de enviar.");
+    }
+});
+
+  document.getElementById('pedidoBtn2').addEventListener('click', () => {
+    document.getElementById('ventanaEmergentebebida').style.display = 'block';
+    });  
+
+document.getElementById('btnEnviar2').addEventListener('click', function() {
+    // Obtener el valor del tamaño seleccionado
+    const selectedSize = document.querySelector('input[name="tamaño"]:checked');
+    
+    if (selectedSize) {
+        // Lógica para manejar la selección del tamaño
+        const sizeValue = selectedSize.value;
+        // Aquí puedes agregar el código necesario para manejar la selección del tamaño (grande o mediano)
+        
+        // Ocultar la ventana emergente
+        document.getElementById('ventanaEmergentebebida').style.display = 'none';
+
+        // Enviar el tipo de pedido y el tamaño seleccionado a través de socket.io
+        const tipoPedido = 'bebida';
+        socket.emit('pedido2', { tipoPedido, sizeValue });
+        
+        // Deseleccionar la opción escogida
+        selectedSize.checked = false;
+    } else {
+        // Si el usuario no ha seleccionado un tamaño, puedes mostrar un mensaje de error o tomar alguna otra acción.
+        alert("Debes seleccionar un tamaño antes de enviar.");
+    }
+});      
+  </script>  
+
+  <script>
+    function logout() {
+      fetch('/logout', {
+        method: 'POST',
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Sesión cerrada exitosamente, redirigir al formulario de inicio de sesión
+            window.location.href = '/login.html';
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  </script>
+</body>
+</html>

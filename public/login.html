@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Iniciar sesión</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Agregar la etiqueta viewport -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: arial;
+      background-image: url('bg-pc.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+    
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #4e4d4d;
+      background-image: url('bg-pc.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }  
+    
+    .form-login {
+      width: 90%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 7px 13px 37px #000;
+      padding: 20px;
+      border-top: 4px solid #017bab;
+      color: #333;
+    }
+    
+    .form-login h2 {
+      margin: 0;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 20px;
+    }
+    
+    .form-login input[type="text"],
+    .form-login input[type="password"] {
+      width: 100%;
+      border: 1px solid #017bab;
+      margin-bottom: 15px;
+      padding: 11px 10px;
+      font-size: 14px;
+    }
+    
+    .form-login button {
+      width: 100%;
+      height: 50px;
+      background: #017bab;
+      border: none;
+      color: white;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+    
+    .form-login p {
+      text-align: center;
+      margin-bottom: 0;
+    }
+    
+    .form-login a {
+      color: #017bab;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .form-login a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Estilos para dispositivos móviles */
+    @media (max-width: 768px) {
+      .container {
+        background-image: url('bg-pc.png');
+      }
+      
+      .form-login {
+        width: 90%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-login">
+      <h2>Iniciar sesión</h2>
+      <form id="login-form">
+        <input type="text" id="nombre-input" placeholder="Nombre de usuario" required>
+        <input type="password" id="password-input" placeholder="Contraseña" required>
+        <button type="button" onclick="login()">Iniciar sesión</button>
+      </form>
+      <p>No tienes una cuenta? <a href="/register.html">Regístrate aquí</a></p>
+    </div>
+  </div>
+  <script>
+    function login() {
+      const nombre = document.getElementById('nombre-input').value;
+      const password = document.getElementById('password-input').value;
+
+      const data = {
+        nombre: nombre,
+        password: password
+      };
+
+      fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          console.log(data);
+          window.location.href = '/'; // Redirige al usuario a la página principal después del inicio de sesión exitoso
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  </script>
+</body>
+</html>

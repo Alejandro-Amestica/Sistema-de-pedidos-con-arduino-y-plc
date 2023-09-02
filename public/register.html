@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Agregar la etiqueta viewport -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #4e4d4d;
+      background-image: url('bg-pc.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }    
+
+    body {
+      font-family: arial;
+      background-image: url('bg-pc.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .register-form {
+      width: 90%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 7px 13px 37px #000;
+      padding: 20px;
+      border-top: 4px solid #017bab;
+      color: #333;
+    }
+
+    .register-form h2 {
+      margin: 0;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 20px;
+    }
+
+    .register-form input[type="text"],
+    .register-form input[type="email"],
+    .register-form input[type="password"] {
+      width: 100%;
+      border: 1px solid #017bab;
+      margin-bottom: 15px;
+      padding: 11px 10px;
+      font-size: 14px;
+    }
+
+    .register-form button {
+      width: 100%;
+      height: 50px;
+      background: #017bab;
+      border: none;
+      color: white;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .register-form p {
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .register-form a {
+      color: #017bab;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .register-form a:hover {
+      text-decoration: underline;
+    }
+
+    /* Estilos para dispositivos móviles */
+    @media (max-width: 768px) {
+      body {
+        background-image: none;
+      }
+
+      .register-form {
+        width: 90%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+ <div class="container"> 
+  <div class="register-form">
+    <h2>Registro</h2>
+    <form id="register-form">
+      <input type="text" id="nombre-input" placeholder="Nombre" maxlength="12" required>
+      <input type="email" id="email-input" placeholder="Email" required>
+      <input type="password" id="password-input" placeholder="Contraseña" required>
+      <button type="button" onclick="register()">Registrarse</button>
+    </form>
+    <p>Ya tienes una cuenta? <a href="/login.html">Inicia sesión aquí</a></p>
+  </div>
+ </div> 
+  <script>
+    function register() {
+      const nombre = document.getElementById('nombre-input').value;
+      const email = document.getElementById('email-input').value;
+      const password = document.getElementById('password-input').value;
+
+      const data = {
+        nombre: nombre,
+        email: email,
+        password: password
+      };
+
+      fetch('/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          console.log(data);
+          window.location.href = '/login.html'; // Redirige al usuario a la página de login después del registro exitoso
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  </script>
+</body>
+</html>

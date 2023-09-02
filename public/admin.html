@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Página de Administrador</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* Estilos para dispositivos móviles */
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    .container {
+      padding: 10px;
+    }
+
+    .pedido-seccion {
+      display: block;
+    }
+
+    .pedido-seccion > div {
+      flex-basis: 100%;
+      max-width: 100%;
+    }
+
+    .pedido-lista {
+      max-height: none;
+    }
+  }
+
+  /* Estilos para dispositivos de escritorio */
+  @media (min-width: 601px) {
+    .pedido-seccion {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .pedido-seccion > div {
+      flex-basis: 33.33%;
+      max-width: 33.33%;
+      margin-bottom: 20px;
+    }
+  }
+
+  /* Estilos comunes para ambos dispositivos */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+    height: 600px; /* Establece la altura fija según tus necesidades */    
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  h2 {
+    margin-top: 20px;
+  }
+
+  .pedido-lista {
+    display: none;
+    overflow: auto;
+    max-height: 200px;
+  }
+
+  .pedido-lista.visible {
+    display: block;
+  }
+
+  .icono {
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bienvenido, Administrador</h1>
+
+    <div class="pedido-seccion">
+      <div>
+        <h2><span class="icono" onclick="toggleLista('pedidos-pendientes-list')">▼</span> Pedidos pendientes:</h2>
+        <table id="pedidos-pendientes-list" class="pedido-lista"></table>
+      </div>
+
+      <div>
+        <h2><span class="icono" onclick="toggleLista('pedidos-confirmados-list')">▼</span> Pedidos confirmados:</h2>
+        <table id="pedidos-confirmados-list" class="pedido-lista"></table>
+      </div>
+
+      <div>
+        <h2><span class="icono" onclick="toggleLista('pedidos-rechazados-list')">▼</span> Pedidos rechazados:</h2>
+        <table id="pedidos-rechazados-list" class="pedido-lista"></table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    const socket = io(); // Conectarse al servidor mediante Socket.io
+
+    // Función para enviar un pulso al pin 9 de Arduino
+    function enviarPulso(duration) {
+      socket.emit('pulso', duration);
+    }
+
+    socket.on('pedido', (pedido) => {
+      actualizarPedidos();
+      // Manejar el evento 'pedido' y actualizar la página con el nuevo pedido
+const pedidoHTML = `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td>`;
+const confirmarButton = `<button onclick="confirmarPedido(${pedido.id})">Confirmar</button>`;
+const rechazarButton = `<button onclick="rechazarPedido(${pedido.id})">Rechazar</button></tr>`;
+
+
+if (pedido.estado === 'pendiente') {
+  pedidosPendientesHTML += pedidoHTML + confirmarButton + rechazarButton;
+} else if (pedido.estado === 'confirmado') {
+  pedidosConfirmadosHTML += pedidoHTML;
+} else if (pedido.estado === 'rechazado') {
+  pedidosRechazadosHTML += pedidoHTML;
+}
+    });
+
+let pedidosPendientesHTML = '';
+let pedidosConfirmadosHTML = '';
+let pedidosRechazadosHTML = '';    
+
+    // Solicitar los pedidos al cargar la página
+    window.addEventListener('load', () => {
+      actualizarPedidos();
+      // Obtener los pedidos pendientes
+      fetch('/pedidos-pendientes')
+        .then((response) => response.json())
+        .then((data) => {
+          const pedidosPendientes = data.pedidos;
+          const pedidosPendientesHTML = pedidosPendientes
+            .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td><td><button onclick="confirmarPedido(${pedido.id})">Confirmar</button></td><td><button onclick="rechazarPedido(${pedido.id})">Rechazar</button></td></tr>`)
+            .join('');
+          document.getElementById('pedidos-pendientes-list').innerHTML = pedidosPendientesHTML;
+        })
+        .catch((error) => {
+          console.log('Error al obtener los pedidos pendientes:', error);
+        });
+
+      // Obtener los pedidos confirmados
+      fetch('/pedidos-confirmados')
+        .then((response) => response.json())
+        .then((data) => {
+          const pedidosConfirmados = data.pedidos;
+          const pedidosConfirmadosHTML = pedidosConfirmados
+            .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td></tr>`)
+            .join('');
+          document.getElementById('pedidos-confirmados-list').innerHTML = pedidosConfirmadosHTML;
+        })
+        .catch((error) => {
+          console.log('Error al obtener los pedidos confirmados:', error);
+        });
+
+      // Obtener los pedidos rechazados
+      fetch('/pedidos-rechazados')
+        .then((response) => response.json())
+        .then((data) => {
+          const pedidosRechazados = data.pedidos;
+          const pedidosRechazadosHTML = pedidosRechazados
+            .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td></tr>`)
+            .join('');
+          document.getElementById('pedidos-rechazados-list').innerHTML = pedidosRechazadosHTML;
+        })
+        .catch((error) => {
+          console.log('Error al obtener los pedidos rechazados:', error);
+        });
+    });
+
+    // Función para confirmar un pedido
+    function confirmarPedido(pedidoId) {
+      fetch(`/confirmar-pedido/${pedidoId}`, { method: 'POST' })
+        .then(() => {
+          // Enviar un pulso de 300ms al pin 9 de Arduino
+          enviarPulso(300);
+          // Actualizar la página después de confirmar el pedido
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.log(`Error al confirmar el pedido ${pedidoId}:`, error);
+        });
+    }
+
+    // Función para rechazar un pedido
+    function rechazarPedido(pedidoId) {
+      fetch(`/rechazar-pedido/${pedidoId}`, { method: 'POST' })
+        .then(() => {
+          // Enviar un pulso de 300ms al pin 9 de Arduino
+          enviarPulso(300);
+          // Actualizar la página después de rechazar el pedido
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.log(`Error al rechazar el pedido ${pedidoId}:`, error);
+        });
+    }
+
+function actualizarPedidos() {
+  // Obtener los pedidos pendientes
+  fetch('/pedidos-pendientes')
+    .then((response) => response.json())
+    .then((data) => {
+      const pedidosPendientes = data.pedidos;
+      let pedidosPendientesHTML = '';
+
+      if (pedidosPendientes.length > 0) {
+        pedidosPendientesHTML = pedidosPendientes
+          .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td><td><button onclick="confirmarPedido(${pedido.id})">Confirmar</button></td><td><button onclick="rechazarPedido(${pedido.id})">Rechazar</button></td></tr>`)
+          .join('');
+      } else {
+        pedidosPendientesHTML = '<tr><td colspan="5">No hay pedidos pendientes</td></tr>';
+      }
+
+      document.getElementById('pedidos-pendientes-list').innerHTML = pedidosPendientesHTML;
+    })
+    .catch((error) => {
+      console.log('Error al obtener los pedidos pendientes:', error);
+    });
+
+  // Obtener los pedidos confirmados
+  fetch('/pedidos-confirmados')
+    .then((response) => response.json())
+    .then((data) => {
+      const pedidosConfirmados = data.pedidos;
+      let pedidosConfirmadosHTML = '';
+
+      if (pedidosConfirmados.length > 0) {
+        pedidosConfirmadosHTML = pedidosConfirmados
+          .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td></tr>`)
+          .join('');
+      } else {
+        pedidosConfirmadosHTML = '<tr><td colspan="3">No hay pedidos confirmados</td></tr>';
+      }
+
+      document.getElementById('pedidos-confirmados-list').innerHTML = pedidosConfirmadosHTML;
+    })
+    .catch((error) => {
+      console.log('Error al obtener los pedidos confirmados:', error);
+    });
+
+  // Obtener los pedidos rechazados
+  fetch('/pedidos-rechazados')
+    .then((response) => response.json())
+    .then((data) => {
+      const pedidosRechazados = data.pedidos;
+      let pedidosRechazadosHTML = '';
+
+      if (pedidosRechazados.length > 0) {
+        pedidosRechazadosHTML = pedidosRechazados
+          .map((pedido) => `<tr><td>ID: ${pedido.id}</td><td>Usuario: ${pedido.usuario}</td><td>consumible: ${pedido.consumible}</td><td>tamaño: ${pedido.tamano}</td><td>Estado: ${pedido.estado}</td></tr>`)
+          .join('');
+      } else {
+        pedidosRechazadosHTML = '<tr><td colspan="3">No hay pedidos rechazados</td></tr>';
+      }
+
+      document.getElementById('pedidos-rechazados-list').innerHTML = pedidosRechazadosHTML;
+    })
+    .catch((error) => {
+      console.log('Error al obtener los pedidos rechazados:', error);
+    });
+}
+
+    // Función para mostrar u ocultar la lista de pedidos al hacer clic en el icono
+    function toggleLista(listaId) {
+      const listaElement = document.getElementById(listaId);
+      listaElement.classList.toggle('visible');
+
+      const iconoElement = document.querySelector(`h2 span.icono[onclick="toggleLista('${listaId}')"]`);
+      if (listaElement.classList.contains('visible')) {
+        iconoElement.textContent = '▲';
+      } else {
+        iconoElement.textContent = '▼';
+      }
+    }
+  </script>
+</body>
+</html>
